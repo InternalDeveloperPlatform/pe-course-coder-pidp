@@ -331,6 +331,32 @@ curl -k -X 'PUT' \
   "data": "'$TF_VAR_humanitec_token'"
 }'
 
+### Now we want to create a commit so backstage gets installed automatically in the background
+curl -X POST \
+  -H "Authorization: Basic NW1pbmFkbWluOjVtaW5hZG1pbg==" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "branch": "main",
+    "message": "Automated commit - make Backstage install",
+    "committer": {
+      "name": "5minadmin",
+      "email": "clemens@humanitec.com"
+    },
+    "author": {
+      "name": "5minadmin",
+      "email": "clemens@humanitec.com"
+    },
+    "files": [
+      {
+        "content": "eW9sbwo=",
+        "filename": "yolo.txt",
+        "mode": "100644",
+        "sha": "49ef4c1f9273718b2421b2c076f09786ede5982c"
+      }
+    ]
+  }' \
+  "https://5min-idp-control-plane/api/v1/repos/5minorg/backstage/contents/yolo.txt"
+
 # Set some nice aliases
 echo "alias k='kubectl'" >> $HOME/.bashrc
 echo "alias kg='kubectl get'" >> $HOME/.bashrc
