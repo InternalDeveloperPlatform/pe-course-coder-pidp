@@ -24,7 +24,7 @@ resource "helm_release" "gitea" {
   repository       = "https://dl.gitea.com/charts/"
 
   chart   = "gitea"
-  version = "10.3.0"
+  version = "12.5.0"
   wait    = true
   timeout = 600
 
