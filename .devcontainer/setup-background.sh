@@ -11,6 +11,10 @@ set -euo pipefail
 SETUP_DIR="/tmp/pidp-setup"
 STATUS_FILE="$SETUP_DIR/status"
 
+# All relative paths (setup/terraform, setup/kind, setup/gitea) assume repo root
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
 # --- Status helpers ---
 update_status() {
   local phase="$1"
