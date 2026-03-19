@@ -309,7 +309,13 @@ export TF_VAR_kubeconfig="$kubeconfig_docker"
 terraform -chdir=setup/terraform init
 
 update_status "terraform" "Running terraform apply..."
-terraform -chdir=setup/terraform apply -auto-approve
+# Helm releases can timeout on first attempt while pulling images. Retry once
+# since cached images make the second attempt much faster.
+if ! terraform -chdir=setup/terraform apply -auto-approve; then
+  echo "Terraform apply failed, retrying (images should be cached now)..."
+  update_status "terraform" "Retrying terraform apply..."
+  terraform -chdir=setup/terraform apply -auto-approve
+fi
 
 echo "Phase 3 complete: terraform applied."
 
