@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# setup-status - Check PocketIDP background setup progress
+
+STATUS_FILE="/tmp/pidp-setup/status"
+LOG_FILE="/tmp/pidp-setup/setup.log"
+
+if [ ! -f "$STATUS_FILE" ]; then
+  echo "No setup in progress (status file not found)."
+  echo "Background setup may not have started yet."
+  exit 1
+fi
+
+# Follow mode: tail the log
+if [[ "${1:-}" == "-f" || "${1:-}" == "--follow" ]]; then
+  if [ ! -f "$LOG_FILE" ]; then
+    echo "Log file not found: $LOG_FILE"
+    exit 1
+  fi
+  echo "--- Tailing setup log (Ctrl+C to stop) ---"
+  tail -f "$LOG_FILE"
+  exit 0
+fi
+
+# One-shot status
+source "$STATUS_FILE"
+NOW=$(date +%s)
+ELAPSED=$(( NOW - STARTED_AT ))
+MINS=$(( ELAPSED / 60 ))
+SECS=$(( ELAPSED % 60 ))
+
+case "$PHASE" in
+  complete)
+    echo "Setup complete. (took ${MINS}m${SECS}s)"
+    ;;
+  failed)
+    echo "Setup FAILED after ${MINS}m${SECS}s"
+    echo "Error: $ERROR"
+    echo ""
+    echo "Check logs: setup-status -f"
+    exit 1
+    ;;
+  *)
+    echo "Phase:   $PHASE"
+    echo "Step:    $CURRENT_STEP"
+    echo "Elapsed: ${MINS}m${SECS}s"
+    echo ""
+    echo "Tail logs: setup-status -f"
+    ;;
+esac
