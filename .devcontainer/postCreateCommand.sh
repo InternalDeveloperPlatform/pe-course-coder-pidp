@@ -45,6 +45,7 @@ fi
 
 # --- Make setup-status available ---
 chmod +x "$SCRIPT_DIR/setup-status"
+run_as_root ln -sf "$SCRIPT_DIR/setup-status" /usr/local/bin/setup-status
 
 # --- Launch background setup ---
 # Env vars must be explicitly available to the nohup subshell

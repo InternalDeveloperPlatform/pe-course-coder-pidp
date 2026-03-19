@@ -20,10 +20,10 @@ update_status() {
   local phase="$1"
   local step="$2"
   cat > "$STATUS_FILE" << EOF
-PHASE=$phase
-STARTED_AT=${STARTED_AT:-$(date +%s)}
-CURRENT_STEP=$step
-ERROR=
+PHASE="$phase"
+STARTED_AT="${STARTED_AT:-$(date +%s)}"
+CURRENT_STEP="$step"
+ERROR=""
 EOF
 }
 
@@ -31,10 +31,10 @@ fail_status() {
   local phase="$1"
   local error="$2"
   cat > "$STATUS_FILE" << EOF
-PHASE=failed
-STARTED_AT=${STARTED_AT:-$(date +%s)}
-CURRENT_STEP=
-ERROR=$error
+PHASE="failed"
+STARTED_AT="${STARTED_AT:-$(date +%s)}"
+CURRENT_STEP=""
+ERROR="$error"
 EOF
   echo "FATAL: $error" >&2
   exit 1
