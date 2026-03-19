@@ -233,10 +233,22 @@ if [ ! -f "$BASE_DIR/state/kube/config.yaml" ]; then
   kind create cluster -n 5min-idp --kubeconfig "$BASE_DIR/state/kube/config.yaml" --config ./setup/kind/cluster.yaml
 fi
 
-update_status "cluster-setup" "Connecting container to kind network..."
+update_status "cluster-setup" "Updating /etc/hosts..."
+if ! grep -q "5min-idp-control-plane" /etc/hosts; then
+  echo "127.0.0.1 5min-idp-control-plane" | run_as_root tee -a /etc/hosts
+fi
+
+# Connect current container to the kind network if it exists.
+# In envbuilder/Coder setups the container runs with --net=host, so this is
+# best-effort: host networking already reaches kind ports via localhost.
+update_status "cluster-setup" "Connecting container to kind network (best-effort)..."
 container_name="5min-idp"
-if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${container_name}")" = 'null' ]; then
-  docker network connect "kind" "${container_name}"
+if docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${container_name}" &>/dev/null; then
+  if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${container_name}")" = 'null' ]; then
+    docker network connect "kind" "${container_name}"
+  fi
+else
+  echo "Container '${container_name}' not found, skipping network connect (likely --net=host)."
 fi
 
 update_status "cluster-setup" "Exporting kubeconfigs..."
@@ -269,11 +281,6 @@ data:
   host: "localhost:${reg_port}"
   help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
-
-update_status "cluster-setup" "Updating /etc/hosts..."
-if ! grep -q "5min-idp-control-plane" /etc/hosts; then
-  echo "127.0.0.1 5min-idp-control-plane" | run_as_root tee -a /etc/hosts
-fi
 
 echo "Phase 2 complete: cluster is up."
 
