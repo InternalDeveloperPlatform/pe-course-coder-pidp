@@ -229,7 +229,13 @@ if [ "$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true
 fi
 
 update_status "cluster-setup" "Creating Kind cluster..."
-if [ ! -f "$BASE_DIR/state/kube/config.yaml" ]; then
+# Check both the kubeconfig AND whether the cluster already exists in docker.
+# The persistent disk can keep the cluster alive across workspace restarts even
+# if the kubeconfig file gets cleaned up.
+if kind get clusters 2>/dev/null | grep -q '^5min-idp$'; then
+  echo "Kind cluster '5min-idp' already exists, regenerating kubeconfig..."
+  kind export kubeconfig -n 5min-idp --kubeconfig "$BASE_DIR/state/kube/config.yaml"
+elif [ ! -f "$BASE_DIR/state/kube/config.yaml" ]; then
   kind create cluster -n 5min-idp --kubeconfig "$BASE_DIR/state/kube/config.yaml" --config ./setup/kind/cluster.yaml
 fi
 
